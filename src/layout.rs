@@ -1,4 +1,5 @@
 pub mod qwerty;
+pub mod qwertz;
 
 pub enum KeyboardLayout {
     ISO(ISOKeyboardLayout),

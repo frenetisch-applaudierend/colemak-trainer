@@ -138,11 +138,45 @@ impl Keyboard {
         origin.x = area.x;
         origin.y += sizes.u1.height;
     }
+
+    fn get_size(key_sizes: &KeySizes, layout: &KeyboardLayout) -> Size {
+        let width = match layout {
+            // ISO -> Last row is the longest
+            KeyboardLayout::ISO(_) => {
+                key_sizes.u1_25.width + (11 * key_sizes.u1.width) + key_sizes.u1_75.width
+            }
+
+            // ANSI -> First row is the longest
+            KeyboardLayout::ANSI(_) => {
+                key_sizes.u1_5.width + (12 * key_sizes.u1.width) + key_sizes.u1_5.width
+            }
+        };
+
+        let height = 3 * key_sizes.u1.height;
+
+        Size::new(width, height)
+    }
 }
 
 impl Widget for Keyboard {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let key_sizes = self.size.into();
+
+        let board_size = Keyboard::get_size(&key_sizes, &self.layout);
+
+        if board_size.width > area.width || board_size.height > area.height {
+            return;
+        }
+
+        let padding_x = (area.width - board_size.width) / 2;
+        let padding_y = (area.height - board_size.height) / 2;
+        let area = Rect::new(
+            area.x + padding_x,
+            area.y + padding_y,
+            board_size.width,
+            board_size.height,
+        );
+
         match self.layout {
             KeyboardLayout::ISO(layout) => Keyboard::render_iso(layout, key_sizes, area, buf),
             KeyboardLayout::ANSI(layout) => Keyboard::render_ansi(layout, key_sizes, area, buf),

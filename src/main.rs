@@ -1,17 +1,12 @@
 use std::io::{stdout, Result};
 
 use crossterm::{
-    event::{self, KeyCode, KeyEventKind},
+    event::{self, Event, KeyCode, KeyEventKind},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
-use layout::KeyboardLayout;
-use ratatui::{
-    backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout},
-    Terminal,
-};
-use ui::{Keyboard, KeyboardSize};
+use ratatui::{backend::CrosstermBackend, Terminal};
+use ui::{KeyboardSize, Main};
 
 mod layout;
 mod ui;
@@ -25,20 +20,15 @@ fn main() -> Result<()> {
     let mut size = KeyboardSize::Small;
     loop {
         terminal.draw(|frame| {
-            let areas = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
-                .split(frame.size());
-
-            let keyboard = Keyboard::new(KeyboardLayout::ANSI(layout::qwerty::ansi()), size);
-            frame.render_widget(keyboard, areas[0]);
-
-            let keyboard = Keyboard::new(KeyboardLayout::ISO(layout::qwerty::iso()), size);
-            frame.render_widget(keyboard, areas[1]);
+            let main = Main {
+                source_layout: layout::qwertz::iso(),
+                target_layout: layout::qwertz::iso(),
+            };
+            frame.render_widget(main, frame.size());
         })?;
 
         if event::poll(std::time::Duration::from_millis(16))? {
-            if let event::Event::Key(key) = event::read()? {
+            if let Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press && key.code == KeyCode::Char('s') {
                     size = if matches!(size, KeyboardSize::Small) {
                         KeyboardSize::Large
