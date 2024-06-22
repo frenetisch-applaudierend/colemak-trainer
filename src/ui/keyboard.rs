@@ -1,11 +1,11 @@
 use ratatui::layout::Size;
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Widget};
+use ratatui::widgets::{Block, BorderType, Widget};
 
 use crate::layout::{ANSIKeyboardLayout, ISOKeyboardLayout, KeyboardLayout};
 
-pub struct Keyboard {
-    layout: KeyboardLayout,
+pub struct Keyboard<'a> {
+    layout: &'a KeyboardLayout,
     size: KeyboardSize,
 }
 
@@ -56,12 +56,12 @@ impl From<KeyboardSize> for KeySizes {
     }
 }
 
-impl Keyboard {
-    pub fn new(layout: KeyboardLayout, size: KeyboardSize) -> Self {
+impl<'a> Keyboard<'a> {
+    pub fn new(layout: &'a KeyboardLayout, size: KeyboardSize) -> Self {
         Self { layout, size }
     }
 
-    fn render_iso(layout: ISOKeyboardLayout, sizes: KeySizes, area: Rect, buf: &mut Buffer) {
+    fn render_iso(layout: &ISOKeyboardLayout, sizes: KeySizes, area: Rect, buf: &mut Buffer) {
         let mut origin = Origin {
             x: area.x,
             y: area.y,
@@ -89,7 +89,7 @@ impl Keyboard {
         Keyboard::render_key(None, sizes.u1_75, &mut origin, buf);
     }
 
-    fn render_ansi(layout: ANSIKeyboardLayout, sizes: KeySizes, area: Rect, buf: &mut Buffer) {
+    fn render_ansi(layout: &ANSIKeyboardLayout, sizes: KeySizes, area: Rect, buf: &mut Buffer) {
         let mut origin = Origin {
             x: area.x,
             y: area.y,
@@ -122,7 +122,9 @@ impl Keyboard {
 
     fn render_key(symbol: Option<&str>, size: Size, origin: &mut Origin, buf: &mut Buffer) {
         let area = Rect::new(origin.x, origin.y, size.width, size.height);
-        Block::bordered().render(area, buf);
+        Block::bordered()
+            .border_type(BorderType::Rounded)
+            .render(area, buf);
 
         if let Some(symbol) = symbol {
             let text_x = origin.x + ((size.width - 2 /* Border */ - (symbol.len() as u16)) / 2) + 1 /* Border */;
@@ -158,7 +160,7 @@ impl Keyboard {
     }
 }
 
-impl Widget for Keyboard {
+impl Widget for Keyboard<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let key_sizes = self.size.into();
 
