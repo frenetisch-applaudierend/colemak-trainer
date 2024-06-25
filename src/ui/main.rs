@@ -1,25 +1,19 @@
 use ratatui::widgets::Widget;
 use ratatui::{layout::Size, prelude::*};
 
-use crate::layout::KeyboardLayout;
+use crate::layout::{KeyboardLayout, LayoutMapper};
 use crate::state::TypingState;
 
 use super::{Centered, Input, Keyboard, KeyboardSize};
 
 pub struct Main<'a> {
-    source_layout: &'a KeyboardLayout,
     target_layout: &'a KeyboardLayout,
     state: &'a TypingState,
 }
 
 impl<'a> Main<'a> {
-    pub fn new(
-        source_layout: &'a KeyboardLayout,
-        target_layout: &'a KeyboardLayout,
-        state: &'a TypingState,
-    ) -> Self {
+    pub fn new(target_layout: &'a KeyboardLayout, state: &'a TypingState) -> Self {
         Self {
-            source_layout,
             target_layout,
             state,
         }

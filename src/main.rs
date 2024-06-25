@@ -5,6 +5,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
+use layout::{KeyboardLayout, LayoutMapper};
 use ratatui::{backend::CrosstermBackend, Terminal};
 use state::{AppState, EventHandler, NextStep};
 use ui::Main;
@@ -21,6 +22,7 @@ fn main() -> Result<()> {
 
     let source_layout = layout::qwertz::iso();
     let target_layout = layout::qwertz::iso();
+    let mapper = LayoutMapper::from(&source_layout, &target_layout);
 
     let mut state = AppState::menu();
 
