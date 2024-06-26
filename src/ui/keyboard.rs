@@ -2,7 +2,7 @@ use ratatui::layout::Size;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, BorderType, Widget};
 
-use crate::layout::{ANSIKeyboardLayout, ISOKeyboardLayout, KeyboardLayout};
+use crate::layout::{ANSIKeyboardLayout, ISOKeyboardLayout, Key, KeyboardLayout};
 
 pub struct Keyboard<'a> {
     layout: &'a KeyboardLayout,
@@ -68,25 +68,25 @@ impl<'a> Keyboard<'a> {
         };
 
         // Render first row
-        Keyboard::render_key(None, sizes.u1_5, &mut origin, buf);
+        Keyboard::render_key(Key::None, sizes.u1_5, &mut origin, buf);
         for sym in layout.row0 {
-            Keyboard::render_key(Some(sym), sizes.u1, &mut origin, buf);
+            Keyboard::render_key(sym, sizes.u1, &mut origin, buf);
         }
         Keyboard::next_row(&mut origin, &area, &sizes);
 
         // Render second row
-        Keyboard::render_key(None, sizes.u1_75, &mut origin, buf);
+        Keyboard::render_key(Key::None, sizes.u1_75, &mut origin, buf);
         for sym in layout.row1 {
-            Keyboard::render_key(Some(sym), sizes.u1, &mut origin, buf);
+            Keyboard::render_key(sym, sizes.u1, &mut origin, buf);
         }
         Keyboard::next_row(&mut origin, &area, &sizes);
 
         // Render third row
-        Keyboard::render_key(None, sizes.u1_25, &mut origin, buf);
+        Keyboard::render_key(Key::None, sizes.u1_25, &mut origin, buf);
         for sym in layout.row2 {
-            Keyboard::render_key(Some(sym), sizes.u1, &mut origin, buf);
+            Keyboard::render_key(sym, sizes.u1, &mut origin, buf);
         }
-        Keyboard::render_key(None, sizes.u1_75, &mut origin, buf);
+        Keyboard::render_key(Key::None, sizes.u1_75, &mut origin, buf);
     }
 
     fn render_ansi(layout: &ANSIKeyboardLayout, sizes: KeySizes, area: Rect, buf: &mut Buffer) {
@@ -96,37 +96,38 @@ impl<'a> Keyboard<'a> {
         };
 
         // Render first row
-        Keyboard::render_key(None, sizes.u1_5, &mut origin, buf);
+        Keyboard::render_key(Key::None, sizes.u1_5, &mut origin, buf);
         let (last, rest) = layout.row0.split_last().expect("cannot be empty");
         for sym in rest {
-            Keyboard::render_key(Some(sym), sizes.u1, &mut origin, buf);
+            Keyboard::render_key(*sym, sizes.u1, &mut origin, buf);
         }
-        Keyboard::render_key(Some(last), sizes.u1_5, &mut origin, buf);
+        Keyboard::render_key(*last, sizes.u1_5, &mut origin, buf);
         Keyboard::next_row(&mut origin, &area, &sizes);
 
         // Render second row
-        Keyboard::render_key(None, sizes.u1_75, &mut origin, buf);
+        Keyboard::render_key(Key::None, sizes.u1_75, &mut origin, buf);
         for sym in layout.row1 {
-            Keyboard::render_key(Some(sym), sizes.u1, &mut origin, buf);
+            Keyboard::render_key(sym, sizes.u1, &mut origin, buf);
         }
-        Keyboard::render_key(None, sizes.ansi_enter, &mut origin, buf);
+        Keyboard::render_key(Key::None, sizes.ansi_enter, &mut origin, buf);
         Keyboard::next_row(&mut origin, &area, &sizes);
 
         // Render third row
-        Keyboard::render_key(None, sizes.u2_25, &mut origin, buf);
+        Keyboard::render_key(Key::None, sizes.u2_25, &mut origin, buf);
         for sym in layout.row2 {
-            Keyboard::render_key(Some(sym), sizes.u1, &mut origin, buf);
+            Keyboard::render_key(sym, sizes.u1, &mut origin, buf);
         }
-        Keyboard::render_key(None, sizes.u1_75, &mut origin, buf);
+        Keyboard::render_key(Key::None, sizes.u1_75, &mut origin, buf);
     }
 
-    fn render_key(symbol: Option<&str>, size: Size, origin: &mut Origin, buf: &mut Buffer) {
+    fn render_key(symbol: Key, size: Size, origin: &mut Origin, buf: &mut Buffer) {
         let area = Rect::new(origin.x, origin.y, size.width, size.height);
         Block::bordered()
             .border_type(BorderType::Rounded)
             .render(area, buf);
 
-        if let Some(symbol) = symbol {
+        if let Key::Char(symbol) = symbol {
+            let symbol = &symbol.to_string();
             let text_x = origin.x + ((size.width - 2 /* Border */ - (symbol.len() as u16)) / 2) + 1 /* Border */;
             let text_y = origin.y + (size.height - 1/* Line Height */) / 2;
 

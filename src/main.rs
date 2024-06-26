@@ -30,7 +30,7 @@ fn main() -> Result<()> {
         terminal.draw(|frame| match &state {
             AppState::Menu(_) => {}
             AppState::Typing(state) => {
-                let main = Main::new(&source_layout, &target_layout, &state);
+                let main = Main::new(&target_layout, &state);
                 frame.render_widget(main, frame.size());
             }
         })?;
