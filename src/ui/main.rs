@@ -6,12 +6,18 @@ use crate::layout::KeyboardLayout;
 use super::{Centered, Input, Keyboard, KeyboardSize};
 
 pub struct Main<'a> {
+    word_list: &'a str,
+    input: Line<'a>,
     target_layout: &'a KeyboardLayout,
 }
 
 impl<'a> Main<'a> {
-    pub fn new(target_layout: &'a KeyboardLayout) -> Self {
-        Self { target_layout }
+    pub fn new(word_list: &'a str, input: Line<'a>, target_layout: &'a KeyboardLayout) -> Self {
+        Self {
+            word_list,
+            input,
+            target_layout,
+        }
     }
 }
 
@@ -26,8 +32,9 @@ impl Widget for Main<'_> {
             ])
             .split(area);
 
-        Centered::new(Size::new(80, 5), Input::new("Hello, World!")).render(areas[0], buf);
-        Centered::new(Size::new(40, 5), Input::new("Foobar")).render(areas[1], buf);
+        Centered::new(Size::new(80, 5), Input::new(Line::raw(self.word_list)))
+            .render(areas[0], buf);
+        Centered::new(Size::new(40, 5), Input::new(self.input)).render(areas[1], buf);
         Keyboard::new(self.target_layout, KeyboardSize::Small).render(areas[2], buf);
     }
 }

@@ -4,11 +4,11 @@ use ratatui::{
 };
 
 pub struct Input<'a> {
-    text: &'a str,
+    text: Line<'a>,
 }
 
 impl<'a> Input<'a> {
-    pub fn new(text: &'a str) -> Self {
+    pub fn new(text: Line<'a>) -> Self {
         Self { text }
     }
 }

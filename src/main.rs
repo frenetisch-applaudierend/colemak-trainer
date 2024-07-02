@@ -23,7 +23,10 @@ fn main() -> Result<()> {
     let target_layout = layout::qwertz::iso();
     let layout_mapper = LayoutMapper::from(&source_layout, &target_layout);
 
-    let state = AppState { layout_mapper };
+    let state = AppState {
+        target_layout,
+        layout_mapper,
+    };
 
     let mut app = App::new(state, MenuScreen::new());
 

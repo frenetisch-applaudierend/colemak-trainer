@@ -23,7 +23,7 @@ pub struct EventContext<'a, State> {
 }
 
 pub struct RenderContext<'a, 'b, 'c, State> {
-    state: &'a State,
+    pub state: &'a State,
     frame: &'b mut Frame<'c>,
 }
 
