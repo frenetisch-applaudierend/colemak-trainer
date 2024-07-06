@@ -29,7 +29,7 @@ impl KeyboardLayout {
         for i in indices.row0 {
             match row0[*i as usize] {
                 Key::Char(ch) => {
-                    letters.insert(ch);
+                    letters.insert(ch.to_ascii_lowercase());
                 }
                 _ => {}
             }
@@ -38,7 +38,7 @@ impl KeyboardLayout {
         for i in indices.row1 {
             match row1[*i as usize] {
                 Key::Char(ch) => {
-                    letters.insert(ch);
+                    letters.insert(ch.to_ascii_lowercase());
                 }
                 _ => {}
             }
@@ -47,7 +47,7 @@ impl KeyboardLayout {
         for i in indices.row2 {
             match row2[*i as usize] {
                 Key::Char(ch) => {
-                    letters.insert(ch);
+                    letters.insert(ch.to_ascii_lowercase());
                 }
                 _ => {}
             }

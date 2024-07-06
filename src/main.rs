@@ -6,7 +6,7 @@ use crossterm::{
 };
 use layout::LayoutMapper;
 use ratatui::{backend::CrosstermBackend, Terminal};
-use state::AppState;
+use state::{AppState, WordList};
 use ui::{screens::MenuScreen, App};
 
 mod layout;
@@ -22,11 +22,9 @@ fn main() -> Result<()> {
     let source_layout = layout::qwertz::iso();
     let target_layout = layout::qwertz::iso();
     let layout_mapper = LayoutMapper::from(&source_layout, &target_layout);
+    let word_list = WordList::new(&target_layout.allowed_letters(layout::Level::One));
 
-    let state = AppState {
-        target_layout,
-        layout_mapper,
-    };
+    let state = AppState::new(target_layout, layout_mapper, word_list);
 
     let mut app = App::new(state, MenuScreen::new());
 

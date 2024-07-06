@@ -41,7 +41,10 @@ impl Screen for MenuScreen {
                     ctx.quit();
                 }
             }
-            KeyCode::Enter => ctx.replace_screen(TypingScreen::new()),
+            KeyCode::Enter => {
+                let screen = TypingScreen::new(&mut ctx.state);
+                ctx.replace_screen(screen);
+            }
             KeyCode::Char(ch) => match ch {
                 'q' => ctx.quit(),
                 _ => {}

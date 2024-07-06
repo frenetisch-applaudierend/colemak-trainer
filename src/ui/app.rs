@@ -17,7 +17,7 @@ pub trait Screen {
 }
 
 pub struct EventContext<'a, State> {
-    state: &'a State,
+    pub state: &'a mut State,
     next_screen: Option<Box<dyn Screen<AppState = State>>>,
     should_quit: bool,
 }

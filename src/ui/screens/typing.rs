@@ -14,10 +14,16 @@ pub struct TypingScreen {
 }
 
 impl TypingScreen {
-    pub fn new() -> Self {
+    pub fn new(state: &mut AppState) -> Self {
         Self {
             esc_count: 0,
-            input: WordInput::new("hello"),
+            input: state.next_word(),
+        }
+    }
+
+    fn try_next_word(&mut self, state: &mut AppState) {
+        if self.input.is_correct() {
+            self.input = state.next_word();
         }
     }
 }
@@ -46,16 +52,18 @@ impl Screen for TypingScreen {
                 }
             }
 
-            KeyCode::Enter => {
-                self.input = WordInput::new("foobar");
-            }
+            KeyCode::Enter => self.try_next_word(&mut ctx.state),
 
             KeyCode::Backspace => {
                 self.input.pop();
             }
 
             KeyCode::Char(c) => {
-                self.input.push(c);
+                if c == ' ' {
+                    self.try_next_word(&mut ctx.state)
+                } else {
+                    self.input.push(c);
+                }
             }
 
             _ => {}
