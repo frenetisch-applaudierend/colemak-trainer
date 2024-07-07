@@ -4,9 +4,8 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
-use layout::LayoutMapper;
 use ratatui::{backend::CrosstermBackend, Terminal};
-use state::{AppState, WordList};
+use state::AppState;
 use ui::{screens::MenuScreen, App};
 
 mod layout;
@@ -19,14 +18,7 @@ fn main() -> Result<()> {
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
     terminal.clear()?;
 
-    let source_layout = layout::qwertz::iso();
-    let target_layout = layout::qwertz::iso();
-    let layout_mapper = LayoutMapper::from(&source_layout, &target_layout);
-    let word_list = WordList::new(&target_layout.allowed_letters(layout::Level::One));
-
-    let state = AppState::new(target_layout, layout_mapper, word_list);
-
-    let mut app = App::new(state, MenuScreen::new());
+    let mut app = App::new(AppState::new(), MenuScreen::new());
 
     app.main_loop(&mut terminal)?;
 

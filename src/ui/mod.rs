@@ -5,6 +5,7 @@ mod keyboard;
 mod main;
 
 pub mod screens;
+pub mod widgets;
 
 pub use app::*;
 pub use centered::*;

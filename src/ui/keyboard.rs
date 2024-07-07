@@ -2,10 +2,10 @@ use ratatui::layout::Size;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, BorderType, Widget};
 
-use crate::layout::{ANSIKeyboardLayout, ISOKeyboardLayout, Key, KeyboardLayout};
+use crate::layout::{AnsiKeyboardLayout, AnyKeyboardLayout, IsoKeyboardLayout, Key};
 
 pub struct Keyboard<'a> {
-    layout: &'a KeyboardLayout,
+    layout: AnyKeyboardLayout<'a>,
     size: KeyboardSize,
 }
 
@@ -57,11 +57,11 @@ impl From<KeyboardSize> for KeySizes {
 }
 
 impl<'a> Keyboard<'a> {
-    pub fn new(layout: &'a KeyboardLayout, size: KeyboardSize) -> Self {
+    pub fn new(layout: AnyKeyboardLayout<'a>, size: KeyboardSize) -> Self {
         Self { layout, size }
     }
 
-    fn render_iso(layout: &ISOKeyboardLayout, sizes: KeySizes, area: Rect, buf: &mut Buffer) {
+    fn render_iso(layout: &IsoKeyboardLayout, sizes: KeySizes, area: Rect, buf: &mut Buffer) {
         let mut origin = Origin {
             x: area.x,
             y: area.y,
@@ -89,7 +89,7 @@ impl<'a> Keyboard<'a> {
         Keyboard::render_key(Key::None, sizes.u1_75, &mut origin, buf);
     }
 
-    fn render_ansi(layout: &ANSIKeyboardLayout, sizes: KeySizes, area: Rect, buf: &mut Buffer) {
+    fn render_ansi(layout: &AnsiKeyboardLayout, sizes: KeySizes, area: Rect, buf: &mut Buffer) {
         let mut origin = Origin {
             x: area.x,
             y: area.y,
@@ -142,15 +142,15 @@ impl<'a> Keyboard<'a> {
         origin.y += sizes.u1.height;
     }
 
-    fn get_size(key_sizes: &KeySizes, layout: &KeyboardLayout) -> Size {
+    fn get_size(key_sizes: &KeySizes, layout: &AnyKeyboardLayout) -> Size {
         let width = match layout {
             // ISO -> Last row is the longest
-            KeyboardLayout::ISO(_) => {
+            AnyKeyboardLayout::Iso(_) => {
                 key_sizes.u1_25.width + (11 * key_sizes.u1.width) + key_sizes.u1_75.width
             }
 
             // ANSI -> First row is the longest
-            KeyboardLayout::ANSI(_) => {
+            AnyKeyboardLayout::Ansi(_) => {
                 key_sizes.u1_5.width + (12 * key_sizes.u1.width) + key_sizes.u1_5.width
             }
         };
@@ -181,8 +181,8 @@ impl Widget for Keyboard<'_> {
         );
 
         match self.layout {
-            KeyboardLayout::ISO(layout) => Keyboard::render_iso(layout, key_sizes, area, buf),
-            KeyboardLayout::ANSI(layout) => Keyboard::render_ansi(layout, key_sizes, area, buf),
+            AnyKeyboardLayout::Iso(layout) => Keyboard::render_iso(layout, key_sizes, area, buf),
+            AnyKeyboardLayout::Ansi(layout) => Keyboard::render_ansi(layout, key_sizes, area, buf),
         }
     }
 }

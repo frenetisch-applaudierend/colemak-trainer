@@ -1,18 +1,18 @@
 use ratatui::widgets::Widget;
 use ratatui::{layout::Size, prelude::*};
 
-use crate::layout::KeyboardLayout;
+use crate::layout::{AnyKeyboardLayout, KeyboardLayouts};
 
 use super::{Centered, Input, Keyboard, KeyboardSize};
 
 pub struct Main<'a> {
     word_list: &'a str,
     input: Line<'a>,
-    target_layout: &'a KeyboardLayout,
+    target_layout: AnyKeyboardLayout<'a>,
 }
 
 impl<'a> Main<'a> {
-    pub fn new(word_list: &'a str, input: Line<'a>, target_layout: &'a KeyboardLayout) -> Self {
+    pub fn new(word_list: &'a str, input: Line<'a>, target_layout: AnyKeyboardLayout<'a>) -> Self {
         Self {
             word_list,
             input,

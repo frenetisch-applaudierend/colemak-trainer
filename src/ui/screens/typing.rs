@@ -1,8 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent};
-use ratatui::widgets::Paragraph;
 
 use crate::{
-    state::{AppState, WordInput},
+    state::{AppState, WordInput, WordList},
     ui::{main::Main, EventContext, RenderContext, Screen},
 };
 
@@ -10,20 +9,25 @@ use super::MenuScreen;
 
 pub struct TypingScreen {
     esc_count: u8,
+    word_list: WordList,
     input: WordInput,
 }
 
 impl TypingScreen {
     pub fn new(state: &mut AppState) -> Self {
+        let allowed_letters = state.layouts.allowed_target_letters(state.level);
+        let mut word_list = WordList::new(&allowed_letters);
+        let input = WordInput::new(word_list.next_word());
         Self {
             esc_count: 0,
-            input: state.next_word(),
+            word_list,
+            input,
         }
     }
 
-    fn try_next_word(&mut self, state: &mut AppState) {
+    fn try_next_word(&mut self) {
         if self.input.is_correct() {
-            self.input = state.next_word();
+            self.input = WordInput::new(self.word_list.next_word());
         }
     }
 }
@@ -35,7 +39,7 @@ impl Screen for TypingScreen {
         ctx.render_widget(Main::new(
             "Todo todo todo",
             self.input.to_line(),
-            &ctx.state.target_layout,
+            ctx.state.layouts.target_layout(),
         ));
     }
 
@@ -52,7 +56,7 @@ impl Screen for TypingScreen {
                 }
             }
 
-            KeyCode::Enter => self.try_next_word(&mut ctx.state),
+            KeyCode::Enter => self.try_next_word(),
 
             KeyCode::Backspace => {
                 self.input.pop();
@@ -60,7 +64,7 @@ impl Screen for TypingScreen {
 
             KeyCode::Char(c) => {
                 if c == ' ' {
-                    self.try_next_word(&mut ctx.state)
+                    self.try_next_word()
                 } else {
                     self.input.push(c);
                 }

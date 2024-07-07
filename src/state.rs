@@ -7,29 +7,22 @@ use ratatui::{
     text::{Line, Span},
 };
 
-use crate::layout::{KeyboardLayout, LayoutMapper};
+use crate::layout::{qwertz, KeyboardLayouts, Level};
 
 pub struct AppState {
-    pub target_layout: KeyboardLayout,
-    pub layout_mapper: LayoutMapper,
-    word_list: WordList,
+    pub level: Level,
+    pub layouts: KeyboardLayouts,
 }
 
 impl AppState {
-    pub fn new(
-        target_layout: KeyboardLayout,
-        layout_mapper: LayoutMapper,
-        word_list: WordList,
-    ) -> Self {
+    pub fn new() -> Self {
         Self {
-            target_layout,
-            layout_mapper,
-            word_list,
+            level: Level::One,
+            layouts: KeyboardLayouts::Iso {
+                source: qwertz::iso(),
+                target: qwertz::iso(),
+            },
         }
-    }
-
-    pub fn next_word(&mut self) -> WordInput {
-        WordInput::new(self.word_list.next_word())
     }
 }
 

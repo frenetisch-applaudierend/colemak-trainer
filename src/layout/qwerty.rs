@@ -1,7 +1,7 @@
-use super::{ANSIKeyboardLayout, ISOKeyboardLayout, Key};
+use super::{AnsiKeyboardLayout, IsoKeyboardLayout, Key};
 
-pub fn iso() -> ISOKeyboardLayout {
-    ISOKeyboardLayout {
+pub fn iso() -> IsoKeyboardLayout {
+    IsoKeyboardLayout {
         row0: [
             Key::Char('Q'),
             Key::Char('W'),
@@ -46,8 +46,8 @@ pub fn iso() -> ISOKeyboardLayout {
     }
 }
 
-pub fn ansi() -> ANSIKeyboardLayout {
-    ANSIKeyboardLayout {
+pub fn ansi() -> AnsiKeyboardLayout {
+    AnsiKeyboardLayout {
         row0: [
             Key::Char('Q'),
             Key::Char('W'),

@@ -3,21 +3,33 @@ use std::collections::{HashMap, HashSet};
 pub mod qwerty;
 pub mod qwertz;
 
-pub enum KeyboardLayout {
-    ISO(ISOKeyboardLayout),
-    ANSI(ANSIKeyboardLayout),
+pub enum KeyboardLayouts {
+    Iso {
+        source: IsoKeyboardLayout,
+        target: IsoKeyboardLayout,
+    },
+    Ansi {
+        source: AnsiKeyboardLayout,
+        target: AnsiKeyboardLayout,
+    },
 }
 
-impl KeyboardLayout {
-    pub fn allowed_letters(&self, level: Level) -> HashSet<char> {
+impl KeyboardLayouts {
+    pub fn allowed_target_letters(&self, level: Level) -> HashSet<char> {
         let (indices, row0, row1, row2) = match self {
-            KeyboardLayout::ISO(layout) => (
+            KeyboardLayouts::Iso {
+                source: _,
+                target: layout,
+            } => (
                 KeyIndices::iso(level),
                 &layout.row0 as &[Key],
                 &layout.row1 as &[Key],
                 &layout.row2 as &[Key],
             ),
-            KeyboardLayout::ANSI(layout) => (
+            KeyboardLayouts::Ansi {
+                source: _,
+                target: layout,
+            } => (
                 KeyIndices::ansi(level),
                 &layout.row0 as &[Key],
                 &layout.row1 as &[Key],
@@ -55,20 +67,33 @@ impl KeyboardLayout {
 
         letters
     }
+
+    pub fn target_layout(&self) -> AnyKeyboardLayout {
+        match self {
+            KeyboardLayouts::Iso { source: _, target } => AnyKeyboardLayout::Iso(target),
+            KeyboardLayouts::Ansi { source: _, target } => AnyKeyboardLayout::Ansi(target),
+        }
+    }
 }
 
-pub struct ISOKeyboardLayout {
+pub struct IsoKeyboardLayout {
     pub row0: [Key; 12],
     pub row1: [Key; 12],
     pub row2: [Key; 11],
 }
 
-pub struct ANSIKeyboardLayout {
+pub struct AnsiKeyboardLayout {
     pub row0: [Key; 13],
     pub row1: [Key; 11],
     pub row2: [Key; 10],
 }
 
+pub enum AnyKeyboardLayout<'a> {
+    Iso(&'a IsoKeyboardLayout),
+    Ansi(&'a AnsiKeyboardLayout),
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Level {
     One,
     Two,
@@ -167,19 +192,16 @@ pub enum Key {
 pub struct LayoutMapper(HashMap<Key, Key>);
 
 impl LayoutMapper {
-    pub fn from(source: &KeyboardLayout, target: &KeyboardLayout) -> Self {
-        use KeyboardLayout::*;
+    pub fn from(layouts: &KeyboardLayouts) -> Self {
+        use KeyboardLayouts::*;
 
-        match (source, target) {
-            (ISO(source), ISO(target)) => Self::from_iso(source, target),
-            (ANSI(source), ANSI(target)) => Self::from_ansi(source, target),
-            _ => {
-                panic!("LayoutMapper can only be created from layouts of the same type (ISO/ANSI)")
-            }
+        match layouts {
+            Iso { source, target } => Self::from_iso(source, target),
+            Ansi { source, target } => Self::from_ansi(source, target),
         }
     }
 
-    pub fn from_iso(source: &ISOKeyboardLayout, target: &ISOKeyboardLayout) -> Self {
+    pub fn from_iso(source: &IsoKeyboardLayout, target: &IsoKeyboardLayout) -> Self {
         let mut map = HashMap::new();
         Self::map_row(source.row0, target.row0, &mut map);
         Self::map_row(source.row1, target.row1, &mut map);
@@ -187,7 +209,7 @@ impl LayoutMapper {
         Self(map)
     }
 
-    pub fn from_ansi(source: &ANSIKeyboardLayout, target: &ANSIKeyboardLayout) -> Self {
+    pub fn from_ansi(source: &AnsiKeyboardLayout, target: &AnsiKeyboardLayout) -> Self {
         let mut map = HashMap::new();
         Self::map_row(source.row0, target.row0, &mut map);
         Self::map_row(source.row1, target.row1, &mut map);
