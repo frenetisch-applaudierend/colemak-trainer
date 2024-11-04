@@ -1,9 +1,9 @@
 use ratatui::widgets::Widget;
 use ratatui::{layout::Size, prelude::*};
 
-use crate::layout::{AnyKeyboardLayout, KeyboardLayouts};
+use crate::layout::AnyKeyboardLayout;
 
-use super::{Centered, Input, Keyboard, KeyboardSize};
+use super::{Centered, Input, Keyboard};
 
 pub struct Main<'a> {
     word_list: &'a str,
@@ -35,6 +35,6 @@ impl Widget for Main<'_> {
         Centered::new(Size::new(80, 5), Input::new(Line::raw(self.word_list)))
             .render(areas[0], buf);
         Centered::new(Size::new(40, 5), Input::new(self.input)).render(areas[1], buf);
-        Keyboard::new(self.target_layout, KeyboardSize::Small).render(areas[2], buf);
+        Keyboard::new(self.target_layout).render(areas[2], buf);
     }
 }

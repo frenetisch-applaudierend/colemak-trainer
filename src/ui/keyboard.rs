@@ -4,16 +4,10 @@ use ratatui::widgets::{Block, BorderType, Widget};
 
 use crate::layout::{AnsiKeyboardLayout, AnyKeyboardLayout, IsoKeyboardLayout, Key};
 
+use super::iso_enter::IsoEnter;
+
 pub struct Keyboard<'a> {
     layout: AnyKeyboardLayout<'a>,
-    size: KeyboardSize,
-}
-
-#[derive(Default, Clone, Copy)]
-pub enum KeyboardSize {
-    #[default]
-    Small,
-    Large,
 }
 
 struct KeySizes {
@@ -21,103 +15,134 @@ struct KeySizes {
     pub u1_25: Size,
     pub u1_5: Size,
     pub u1_75: Size,
+    pub u2: Size,
     pub u2_25: Size,
-
-    pub ansi_enter: Size,
 }
 
+#[derive(Debug, Clone, Copy)]
 struct Origin {
     pub x: u16,
     pub y: u16,
 }
 
-impl From<KeyboardSize> for KeySizes {
-    fn from(value: KeyboardSize) -> Self {
-        match value {
-            KeyboardSize::Small => KeySizes {
-                u1: Size::new(5, 3),
-                u1_25: Size::new(6, 3),
-                u1_5: Size::new(7, 3),
-                u1_75: Size::new(9, 3),
-                u2_25: Size::new(11, 3),
+static KEY_HEIGHT: u16 = 3;
 
-                ansi_enter: Size::new(10, 3),
-            },
-            KeyboardSize::Large => KeySizes {
-                u1: Size::new(9, 5),
-                u1_25: Size::new(11, 5),
-                u1_5: Size::new(13, 5),
-                u1_75: Size::new(16, 5),
-                u2_25: Size::new(19, 5),
+static SIZES: KeySizes = KeySizes {
+    u1: Size::new(5, KEY_HEIGHT),
+    u1_25: Size::new(6, KEY_HEIGHT),
+    u1_5: Size::new(7, KEY_HEIGHT),
+    u1_75: Size::new(9, KEY_HEIGHT),
+    u2: Size::new(10, KEY_HEIGHT),
+    u2_25: Size::new(11, KEY_HEIGHT),
+};
 
-                ansi_enter: Size::new(19, 5),
-            },
-        }
-    }
-}
+static BOARD_SIZE: Size = Size {
+    width: SIZES.u1.width * 13 + SIZES.u2.width,
+    height: 5 * SIZES.u1.height,
+};
 
 impl<'a> Keyboard<'a> {
-    pub fn new(layout: AnyKeyboardLayout<'a>, size: KeyboardSize) -> Self {
-        Self { layout, size }
+    pub fn new(layout: AnyKeyboardLayout<'a>) -> Self {
+        Self { layout }
     }
 
-    fn render_iso(layout: &IsoKeyboardLayout, sizes: KeySizes, area: Rect, buf: &mut Buffer) {
+    fn render_layout(layout: AnyKeyboardLayout<'a>, area: Rect, buf: &mut Buffer) {
         let mut origin = Origin {
             x: area.x,
             y: area.y,
         };
 
-        // Render first row
-        Keyboard::render_key(Key::None, sizes.u1_5, &mut origin, buf);
+        // Render top row
+        for _ in 0..13 {
+            Keyboard::render_key(Key::None, SIZES.u1, &mut origin, buf);
+        }
+        Keyboard::render_key(Key::None, SIZES.u2, &mut origin, buf);
+        Keyboard::next_row(&mut origin, &area);
+
+        match layout {
+            AnyKeyboardLayout::Iso(layout) => Keyboard::render_iso(layout, area, &mut origin, buf),
+            AnyKeyboardLayout::Ansi(layout) => {
+                Keyboard::render_ansi(layout, area, &mut origin, buf)
+            }
+        }
+
+        // Render bottom row
+        Keyboard::next_row(&mut origin, &area);
+        for _ in 0..3 {
+            Keyboard::render_key(Key::None, SIZES.u1_25, &mut origin, buf);
+        }
+
+        let space_size = Size::new(BOARD_SIZE.width - 7 * SIZES.u1_25.width, KEY_HEIGHT);
+        Keyboard::render_key(Key::None, space_size, &mut origin, buf);
+
+        for _ in 0..4 {
+            Keyboard::render_key(Key::None, SIZES.u1_25, &mut origin, buf);
+        }
+    }
+
+    fn render_iso(layout: &IsoKeyboardLayout, area: Rect, origin: &mut Origin, buf: &mut Buffer) {
+        // Render first key row
+        Keyboard::render_key(Key::None, SIZES.u1_5, origin, buf);
         for sym in layout.row0 {
-            Keyboard::render_key(sym, sizes.u1, &mut origin, buf);
+            Keyboard::render_key(sym, SIZES.u1, origin, buf);
         }
-        Keyboard::next_row(&mut origin, &area, &sizes);
 
-        // Render second row
-        Keyboard::render_key(Key::None, sizes.u1_75, &mut origin, buf);
+        let iso_enter_width = Keyboard::remaining_key_size(area, *origin).width;
+        let iso_enter = IsoEnter {
+            width: iso_enter_width,
+            line_height: KEY_HEIGHT,
+            inset: 2,
+        };
+        iso_enter.render(
+            Rect::new(origin.x, origin.y, iso_enter_width, KEY_HEIGHT * 2),
+            buf,
+        );
+
+        Keyboard::next_row(origin, &area);
+
+        // Render second key row
+        Keyboard::render_key(Key::None, SIZES.u1_75, origin, buf);
         for sym in layout.row1 {
-            Keyboard::render_key(sym, sizes.u1, &mut origin, buf);
+            Keyboard::render_key(sym, SIZES.u1, origin, buf);
         }
-        Keyboard::next_row(&mut origin, &area, &sizes);
+        Keyboard::next_row(origin, &area);
 
-        // Render third row
-        Keyboard::render_key(Key::None, sizes.u1_25, &mut origin, buf);
+        // Render third key row
+        Keyboard::render_key(Key::None, SIZES.u1_25, origin, buf);
         for sym in layout.row2 {
-            Keyboard::render_key(sym, sizes.u1, &mut origin, buf);
+            Keyboard::render_key(sym, SIZES.u1, origin, buf);
         }
-        Keyboard::render_key(Key::None, sizes.u1_75, &mut origin, buf);
+        let rshift_size = Keyboard::remaining_key_size(area, *origin);
+        Keyboard::render_key(Key::None, rshift_size, origin, buf);
     }
 
-    fn render_ansi(layout: &AnsiKeyboardLayout, sizes: KeySizes, area: Rect, buf: &mut Buffer) {
-        let mut origin = Origin {
-            x: area.x,
-            y: area.y,
-        };
-
-        // Render first row
-        Keyboard::render_key(Key::None, sizes.u1_5, &mut origin, buf);
+    fn render_ansi(layout: &AnsiKeyboardLayout, area: Rect, origin: &mut Origin, buf: &mut Buffer) {
+        // Render first key row
+        Keyboard::render_key(Key::None, SIZES.u1_5, origin, buf);
         let (last, rest) = layout.row0.split_last().expect("cannot be empty");
         for sym in rest {
-            Keyboard::render_key(*sym, sizes.u1, &mut origin, buf);
+            Keyboard::render_key(*sym, SIZES.u1, origin, buf);
         }
-        Keyboard::render_key(*last, sizes.u1_5, &mut origin, buf);
-        Keyboard::next_row(&mut origin, &area, &sizes);
+        let last_key_size = Keyboard::remaining_key_size(area, *origin);
+        Keyboard::render_key(*last, last_key_size, origin, buf);
+        Keyboard::next_row(origin, &area);
 
-        // Render second row
-        Keyboard::render_key(Key::None, sizes.u1_75, &mut origin, buf);
+        // Render second key row
+        Keyboard::render_key(Key::None, SIZES.u1_75, origin, buf);
         for sym in layout.row1 {
-            Keyboard::render_key(sym, sizes.u1, &mut origin, buf);
+            Keyboard::render_key(sym, SIZES.u1, origin, buf);
         }
-        Keyboard::render_key(Key::None, sizes.ansi_enter, &mut origin, buf);
-        Keyboard::next_row(&mut origin, &area, &sizes);
+        let enter_size = Keyboard::remaining_key_size(area, *origin);
+        Keyboard::render_key(Key::None, enter_size, origin, buf);
+        Keyboard::next_row(origin, &area);
 
-        // Render third row
-        Keyboard::render_key(Key::None, sizes.u2_25, &mut origin, buf);
+        // Render third key row
+        Keyboard::render_key(Key::None, SIZES.u2_25, origin, buf);
         for sym in layout.row2 {
-            Keyboard::render_key(sym, sizes.u1, &mut origin, buf);
+            Keyboard::render_key(sym, SIZES.u1, origin, buf);
         }
-        Keyboard::render_key(Key::None, sizes.u1_75, &mut origin, buf);
+        let rshift_size = Keyboard::remaining_key_size(area, *origin);
+        Keyboard::render_key(Key::None, rshift_size, origin, buf);
     }
 
     fn render_key(symbol: Key, size: Size, origin: &mut Origin, buf: &mut Buffer) {
@@ -137,52 +162,32 @@ impl<'a> Keyboard<'a> {
         origin.x += size.width;
     }
 
-    fn next_row(origin: &mut Origin, area: &Rect, sizes: &KeySizes) {
+    fn next_row(origin: &mut Origin, area: &Rect) {
         origin.x = area.x;
-        origin.y += sizes.u1.height;
+        origin.y += SIZES.u1.height;
     }
 
-    fn get_size(key_sizes: &KeySizes, layout: &AnyKeyboardLayout) -> Size {
-        let width = match layout {
-            // ISO -> Last row is the longest
-            AnyKeyboardLayout::Iso(_) => {
-                key_sizes.u1_25.width + (11 * key_sizes.u1.width) + key_sizes.u1_75.width
-            }
-
-            // ANSI -> First row is the longest
-            AnyKeyboardLayout::Ansi(_) => {
-                key_sizes.u1_5.width + (12 * key_sizes.u1.width) + key_sizes.u1_5.width
-            }
-        };
-
-        let height = 3 * key_sizes.u1.height;
-
-        Size::new(width, height)
+    fn remaining_key_size(area: Rect, origin: Origin) -> Size {
+        let width = BOARD_SIZE.width - (origin.x - area.left());
+        Size::new(width, KEY_HEIGHT)
     }
 }
 
 impl Widget for Keyboard<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let key_sizes = self.size.into();
-
-        let board_size = Keyboard::get_size(&key_sizes, &self.layout);
-
-        if board_size.width > area.width || board_size.height > area.height {
+        if BOARD_SIZE.width > area.width || BOARD_SIZE.height > area.height {
             return;
         }
 
-        let padding_x = (area.width - board_size.width) / 2;
-        let padding_y = (area.height - board_size.height) / 2;
+        let padding_x = (area.width - BOARD_SIZE.width) / 2;
+        let padding_y = (area.height - BOARD_SIZE.height) / 2;
         let area = Rect::new(
             area.x + padding_x,
             area.y + padding_y,
-            board_size.width,
-            board_size.height,
+            BOARD_SIZE.width,
+            BOARD_SIZE.height,
         );
 
-        match self.layout {
-            AnyKeyboardLayout::Iso(layout) => Keyboard::render_iso(layout, key_sizes, area, buf),
-            AnyKeyboardLayout::Ansi(layout) => Keyboard::render_ansi(layout, key_sizes, area, buf),
-        }
+        Keyboard::render_layout(self.layout, area, buf);
     }
 }

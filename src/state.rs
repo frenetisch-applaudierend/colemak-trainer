@@ -18,9 +18,9 @@ impl AppState {
     pub fn new() -> Self {
         Self {
             level: Level::One,
-            layouts: KeyboardLayouts::Iso {
-                source: qwertz::iso(),
-                target: qwertz::iso(),
+            layouts: KeyboardLayouts::Ansi {
+                source: qwertz::ansi(),
+                target: qwertz::ansi(),
             },
         }
     }

@@ -1,6 +1,7 @@
 mod app;
 mod centered;
 mod input;
+mod iso_enter;
 mod keyboard;
 mod main;
 
