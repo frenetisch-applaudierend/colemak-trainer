@@ -1,65 +1,15 @@
-use std::{collections::HashSet, mem::replace};
+use std::mem::replace;
 
-use include_lines::include_lines;
-use rand::prelude::*;
 use ratatui::{
     style::{Style, Stylize},
     text::{Line, Span},
 };
 
-use crate::layout::{qwertz, KeyboardLayouts, Level};
+mod app;
+mod word_list;
 
-pub struct AppState {
-    pub level: Level,
-    pub layouts: KeyboardLayouts,
-}
-
-impl AppState {
-    pub fn new() -> Self {
-        Self {
-            level: Level::One,
-            layouts: KeyboardLayouts::Ansi {
-                source: qwertz::ansi(),
-                target: qwertz::ansi(),
-            },
-        }
-    }
-}
-
-pub struct WordList {
-    words: Vec<&'static str>,
-    rng: rand::rngs::ThreadRng,
-}
-
-impl WordList {
-    pub fn new(allowed_letters: &HashSet<char>) -> Self {
-        const WORDS: [&'static str; 4974] = include_lines!("res/words.en.txt");
-
-        let rng = rand::thread_rng();
-        let matching = WORDS
-            .into_iter()
-            .filter(|w| Self::is_valid(w, allowed_letters))
-            .collect::<Vec<_>>();
-
-        Self {
-            words: matching,
-            rng,
-        }
-    }
-
-    fn is_valid(word: &str, allowed_letters: &HashSet<char>) -> bool {
-        for ch in word.chars() {
-            if !allowed_letters.contains(&ch) {
-                return false;
-            }
-        }
-        true
-    }
-
-    pub fn next_word(&mut self) -> &'static str {
-        self.words.choose(&mut self.rng).unwrap_or(&"hello")
-    }
-}
+pub use app::*;
+pub use word_list::*;
 
 pub struct WordIter(<Vec<&'static str> as IntoIterator>::IntoIter);
 

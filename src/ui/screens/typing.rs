@@ -18,6 +18,7 @@ impl TypingScreen {
         let allowed_letters = state.layouts.allowed_target_letters(state.level);
         let mut word_list = WordList::new(&allowed_letters);
         let input = WordInput::new(word_list.next_word());
+
         Self {
             esc_count: 0,
             word_list,
@@ -56,18 +57,19 @@ impl Screen for TypingScreen {
                 }
             }
 
-            KeyCode::Enter => self.try_next_word(),
+            KeyCode::Enter | KeyCode::Char(' ') => {
+                self.esc_count = 0;
+                self.try_next_word()
+            }
 
             KeyCode::Backspace => {
+                self.esc_count = 0;
                 self.input.pop();
             }
 
             KeyCode::Char(c) => {
-                if c == ' ' {
-                    self.try_next_word()
-                } else {
-                    self.input.push(c);
-                }
+                self.esc_count = 0;
+                self.input.push(c);
             }
 
             _ => {}
