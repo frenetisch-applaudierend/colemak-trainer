@@ -5,6 +5,7 @@ pub struct IsoEnter {
     pub width: u16,
     pub line_height: u16,
     pub inset: u16,
+    pub color: Color,
 }
 
 impl Widget for IsoEnter {
@@ -16,6 +17,8 @@ impl Widget for IsoEnter {
         {
             return;
         }
+
+        buf.set_style(area, self.color);
 
         // Top border
         buf.get_mut(area.left(), area.top())

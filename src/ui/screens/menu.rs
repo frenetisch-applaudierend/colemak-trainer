@@ -2,7 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::widgets::{Block, Padding, Paragraph};
 
 use crate::{
-    layout::{qwerty, qwertz, AnsiKeyboardLayout, IsoKeyboardLayout},
+    keyboard::{layouts, AnsiKeyboardLayout, IsoKeyboardLayout},
     state::AppState,
     ui::{EventContext, RenderContext, Screen},
 };
@@ -17,8 +17,16 @@ pub struct MenuScreen {
 impl MenuScreen {
     pub fn new() -> Self {
         Self {
-            iso_layouts: vec![qwerty::iso(), qwertz::iso()],
-            ansi_layouts: vec![qwerty::ansi(), qwertz::ansi()],
+            iso_layouts: vec![
+                layouts::qwerty::iso(),
+                layouts::qwertz::iso(),
+                layouts::colemak_dh::iso(),
+            ],
+            ansi_layouts: vec![
+                layouts::qwerty::ansi(),
+                layouts::qwertz::ansi(),
+                layouts::colemak_dh::ansi(),
+            ],
         }
     }
 }

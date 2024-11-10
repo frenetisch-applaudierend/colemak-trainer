@@ -2,7 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::{
     state::{AppState, WordInput, WordList},
-    ui::{main::Main, EventContext, RenderContext, Screen},
+    ui::{colors::ColorPalette, main::Main, EventContext, RenderContext, Screen},
 };
 
 use super::MenuScreen;
@@ -11,6 +11,7 @@ pub struct TypingScreen {
     esc_count: u8,
     word_list: WordList,
     input: WordInput,
+    colors: ColorPalette,
 }
 
 impl TypingScreen {
@@ -18,11 +19,13 @@ impl TypingScreen {
         let allowed_letters = state.layouts.allowed_target_letters(state.level);
         let mut word_list = WordList::new(&allowed_letters);
         let input = WordInput::new(word_list.next_word());
+        let colors = ColorPalette::default();
 
         Self {
             esc_count: 0,
             word_list,
             input,
+            colors,
         }
     }
 
@@ -41,6 +44,7 @@ impl Screen for TypingScreen {
             "Todo todo todo",
             self.input.to_line(),
             ctx.state.layouts.target_layout(),
+            &self.colors,
         ));
     }
 

@@ -1,5 +1,6 @@
 mod app;
 mod centered;
+mod colors;
 mod input;
 mod iso_enter;
 mod keyboard;

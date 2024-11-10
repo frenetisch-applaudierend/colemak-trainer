@@ -1,4 +1,4 @@
-use crate::layout::{qwertz, KeyboardLayouts, Level};
+use crate::keyboard::{layouts, KeyboardLayouts, Level};
 
 pub struct AppState {
     pub level: Level,
@@ -10,8 +10,8 @@ impl AppState {
         Self {
             level: Level::One,
             layouts: KeyboardLayouts::Iso {
-                source: qwertz::iso(),
-                target: qwertz::iso(),
+                source: layouts::qwertz::iso(),
+                target: layouts::colemak_dh::iso(),
             },
         }
     }

@@ -1,8 +1,5 @@
 use std::collections::{HashMap, HashSet};
 
-pub mod qwerty;
-pub mod qwertz;
-
 pub enum KeyboardLayouts {
     Iso {
         source: IsoKeyboardLayout,
@@ -40,7 +37,7 @@ impl KeyboardLayouts {
 
         for i in indices.row0 {
             match row0[*i as usize] {
-                Key::Char(ch) => {
+                Key::Char(ch, _) => {
                     letters.insert(ch.to_ascii_lowercase());
                 }
                 _ => {}
@@ -49,7 +46,7 @@ impl KeyboardLayouts {
 
         for i in indices.row1 {
             match row1[*i as usize] {
-                Key::Char(ch) => {
+                Key::Char(ch, _) => {
                     letters.insert(ch.to_ascii_lowercase());
                 }
                 _ => {}
@@ -58,7 +55,7 @@ impl KeyboardLayouts {
 
         for i in indices.row2 {
             match row2[*i as usize] {
-                Key::Char(ch) => {
+                Key::Char(ch, _) => {
                     letters.insert(ch.to_ascii_lowercase());
                 }
                 _ => {}
@@ -186,7 +183,16 @@ impl KeyIndices {
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub enum Key {
     None,
-    Char(char),
+    Char(char, Finger),
+}
+
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
+pub enum Finger {
+    Pinky,
+    Ring,
+    Middle,
+    Index,
+    Thumb,
 }
 
 pub struct LayoutMapper(HashMap<Key, Key>);

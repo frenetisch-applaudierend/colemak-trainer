@@ -8,7 +8,7 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 use state::AppState;
 use ui::{screens::MenuScreen, App};
 
-mod layout;
+mod keyboard;
 mod state;
 mod ui;
 

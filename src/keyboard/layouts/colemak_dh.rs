@@ -1,0 +1,92 @@
+use crate::keyboard::{AnsiKeyboardLayout, Finger, IsoKeyboardLayout, Key};
+
+pub fn iso() -> IsoKeyboardLayout {
+    IsoKeyboardLayout {
+        row0: [
+            Key::Char('Q', Finger::Pinky),
+            Key::Char('W', Finger::Ring),
+            Key::Char('F', Finger::Middle),
+            Key::Char('P', Finger::Index),
+            Key::Char('B', Finger::Index),
+            Key::Char('J', Finger::Index),
+            Key::Char('L', Finger::Index),
+            Key::Char('U', Finger::Middle),
+            Key::Char('Y', Finger::Ring),
+            Key::None,
+            Key::None,
+            Key::None,
+        ],
+        row1: [
+            Key::Char('A', Finger::Pinky),
+            Key::Char('R', Finger::Ring),
+            Key::Char('S', Finger::Middle),
+            Key::Char('T', Finger::Index),
+            Key::Char('G', Finger::Index),
+            Key::Char('M', Finger::Index),
+            Key::Char('N', Finger::Index),
+            Key::Char('E', Finger::Middle),
+            Key::Char('I', Finger::Ring),
+            Key::Char('O', Finger::Pinky),
+            Key::None,
+            Key::None,
+        ],
+        row2: [
+            Key::Char('Z', Finger::Pinky),
+            Key::Char('X', Finger::Ring),
+            Key::Char('C', Finger::Middle),
+            Key::Char('D', Finger::Index),
+            Key::Char('V', Finger::Index),
+            Key::None,
+            Key::Char('K', Finger::Index),
+            Key::Char('H', Finger::Index),
+            Key::None,
+            Key::None,
+            Key::None,
+        ],
+    }
+}
+
+pub fn ansi() -> AnsiKeyboardLayout {
+    AnsiKeyboardLayout {
+        row0: [
+            Key::Char('Q', Finger::Pinky),
+            Key::Char('W', Finger::Ring),
+            Key::Char('F', Finger::Middle),
+            Key::Char('P', Finger::Index),
+            Key::Char('B', Finger::Index),
+            Key::Char('J', Finger::Index),
+            Key::Char('L', Finger::Index),
+            Key::Char('U', Finger::Middle),
+            Key::Char('Y', Finger::Ring),
+            Key::None,
+            Key::None,
+            Key::None,
+            Key::None,
+        ],
+        row1: [
+            Key::Char('A', Finger::Pinky),
+            Key::Char('R', Finger::Ring),
+            Key::Char('S', Finger::Middle),
+            Key::Char('T', Finger::Index),
+            Key::Char('G', Finger::Index),
+            Key::Char('M', Finger::Index),
+            Key::Char('N', Finger::Index),
+            Key::Char('E', Finger::Middle),
+            Key::Char('I', Finger::Ring),
+            Key::Char('O', Finger::Pinky),
+            Key::None,
+        ],
+        row2: [
+            Key::Char('Z', Finger::Pinky),
+            Key::Char('X', Finger::Ring),
+            Key::Char('C', Finger::Middle),
+            Key::Char('D', Finger::Index),
+            Key::Char('V', Finger::Index),
+            Key::Char('K', Finger::Index),
+            Key::Char('H', Finger::Index),
+            Key::None,
+            Key::None,
+            Key::None,
+        ],
+    }
+}
