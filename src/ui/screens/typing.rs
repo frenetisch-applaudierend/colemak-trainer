@@ -1,6 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::{
+    keyboard::LayoutMapper,
     state::{AppState, WordInput, WordList},
     ui::{colors::ColorPalette, main::Main, EventContext, RenderContext, Screen},
 };
@@ -11,6 +12,7 @@ pub struct TypingScreen {
     esc_count: u8,
     word_list: WordList,
     input: WordInput,
+    mapper: LayoutMapper,
     colors: ColorPalette,
 }
 
@@ -19,12 +21,14 @@ impl TypingScreen {
         let allowed_letters = state.layouts.allowed_target_letters(state.level);
         let mut word_list = WordList::new(&allowed_letters);
         let input = WordInput::new(word_list.next_word());
+        let mapper = state.layouts.layout_mapper();
         let colors = ColorPalette::default();
 
         Self {
             esc_count: 0,
             word_list,
             input,
+            mapper,
             colors,
         }
     }
@@ -73,7 +77,11 @@ impl Screen for TypingScreen {
 
             KeyCode::Char(c) => {
                 self.esc_count = 0;
-                self.input.push(c);
+                if let Some(c) = self.mapper.map(c) {
+                    self.input.push(c);
+                } else {
+                    eprintln!("Could not map key event {:?}", event);
+                }
             }
 
             _ => {}

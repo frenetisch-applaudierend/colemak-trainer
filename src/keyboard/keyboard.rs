@@ -71,6 +71,10 @@ impl KeyboardLayouts {
             KeyboardLayouts::Ansi { source: _, target } => AnyKeyboardLayout::Ansi(target),
         }
     }
+
+    pub fn layout_mapper(&self) -> LayoutMapper {
+        LayoutMapper::from(self)
+    }
 }
 
 pub struct IsoKeyboardLayout {
@@ -195,7 +199,7 @@ pub enum Finger {
     Thumb,
 }
 
-pub struct LayoutMapper(HashMap<Key, Key>);
+pub struct LayoutMapper(HashMap<char, Key>);
 
 impl LayoutMapper {
     pub fn from(layouts: &KeyboardLayouts) -> Self {
@@ -223,18 +227,21 @@ impl LayoutMapper {
         Self(map)
     }
 
-    fn map_row<const N: usize>(source: [Key; N], target: [Key; N], map: &mut HashMap<Key, Key>) {
+    fn map_row<const N: usize>(source: [Key; N], target: [Key; N], map: &mut HashMap<char, Key>) {
         for i in 0..N {
             let source = source[i];
             let target = target[i];
 
-            if !matches!(source, Key::None) {
-                map.insert(source, target);
+            if let Key::Char(chr, _) = source {
+                map.insert(chr.to_ascii_lowercase(), target);
             }
         }
     }
 
-    pub fn map(&self, key: Key) -> Key {
-        self.0.get(&key).copied().unwrap_or(Key::None)
+    pub fn map(&self, key: char) -> Option<char> {
+        match self.0.get(&key).copied().unwrap_or(Key::None) {
+            Key::None => None,
+            Key::Char(chr, _) => Some(chr.to_ascii_lowercase()),
+        }
     }
 }
